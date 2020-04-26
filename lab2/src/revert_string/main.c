@@ -21,5 +21,7 @@ int main(int argc, char *argv[])
 	printf("Reverted: %s\n", reverted_str);
 	free(reverted_str);
 	return 0;
+    printf("Change");
+
 }
 
