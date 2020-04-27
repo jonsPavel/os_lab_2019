@@ -9,5 +9,6 @@ void RevertString(char *str)
     reverse[strlen(str)] = '\0';
     for (i=0;i<strlen(str);i++)
 	str[i] = reverse[i] ;
+    printf("Changed");
 }
 
