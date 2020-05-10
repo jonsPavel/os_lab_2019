@@ -3,6 +3,8 @@
 
 #include "find_min_max.h"
 #include "utils.h"
+#include "utils.c"
+#include "find_min_max.c"
 
 int main(int argc, char **argv) {
   if (argc != 3) {
