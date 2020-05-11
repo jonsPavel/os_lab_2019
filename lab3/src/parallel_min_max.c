@@ -121,43 +121,40 @@ fopen("numbers.txt","w");
 }
 
 for (int i = 0; i < pnum; i++) {
-pid_t child_pid = fork();
-if (child_pid >= 0) {
-// successful fork
-active_child_processes += 1;
-if (child_pid == 0) {
-// child process
-// parallel somehow
-struct MinMax minmax = GetMinMax(array, array_size/pnum*i, array_size/pnum*(i+1));
+        pid_t child_pid = fork();
+        if (child_pid >= 0) {
+            // successful fork
+            active_child_processes += 1;
+            if (child_pid == 0) {
+                // child process
+                // parallel somehow
+                struct MinMax minmax = GetMinMax(array, array_size/pnum*i, array_size/pnum*(i+1));
 
-if (with_files) {
-// use files here
-FILE *fp;
-if((fp = fopen("numbers.txt","a+")) != NULL)
-{
-fprintf(fp, "%d\n%d\n", minmax.min, minmax.max);
-}
-else {
-printf("Can't open file\n");
-return 1;
-}
-fclose(fp);
+                if (with_files) {
+                // use files here
+                FILE *fp;
+                if((fp = fopen("numbers.txt","a+")) != NULL){
+                    fprintf(fp, "%d\n%d\n", minmax.min, minmax.max);
+                }
+                else {
+                    printf("Can't open file\n");
+                return 1;
+                }
+                fclose(fp);
+                } else {
+                // пайп
+                    close(pipefd[0]);//закрываем конец для чтения   
+                    write(pipefd[1], &minmax.min, 16);
+                    write(pipefd[1], &minmax.max, 16);
+                    close(pipefd[1]); //закрываем конец для записи
+                }
+            return 0;
+        }
 
-} else {
-
-// use pipe here
-close(pipefd[0]);
-write(pipefd[1], &minmax.min, 16);
-write(pipefd[1], &minmax.max, 16);
-close(pipefd[1]);
-}
-return 0;
-}
-
-} else {
-printf("Fork failed!\n");
-return 1;
-}
+        } else {
+            printf("Fork failed!\n");
+            return 1;
+    }
 }
 
 while (active_child_processes > 0) {
