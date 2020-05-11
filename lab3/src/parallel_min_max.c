@@ -9,6 +9,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/file.h>
 
 #include <getopt.h>
 
@@ -129,17 +130,20 @@ for (int i = 0; i < pnum; i++) {
                 // child process
                 // parallel somehow
                 struct MinMax minmax = GetMinMax(array, array_size/pnum*i, array_size/pnum*(i+1));
-
+                
                 if (with_files) {
                 // use files here
                 FILE *fp;
+                flock(fp, LOCK_EX); //блокировка
                 if((fp = fopen("numbers.txt","a+")) != NULL){
                     fprintf(fp, "%d\n%d\n", minmax.min, minmax.max);
                 }
+                
                 else {
                     printf("Can't open file\n");
                 return 1;
                 }
+                flock(fp, LOCK_UN); // удалить существующую блокировку
                 fclose(fp);
                 } else {
                 // пайп
@@ -148,6 +152,7 @@ for (int i = 0; i < pnum; i++) {
                     write(pipefd[1], &minmax.max, 16);
                     close(pipefd[1]); //закрываем конец для записи
                 }
+               
             return 0;
         }
 
@@ -177,6 +182,7 @@ if (with_files) {
 // read from files
 FILE *fp;
 int a = -1;
+
 if((fp = fopen("numbers.txt","r")) != NULL)
 {
 for(int k = 0; k < pnum; k++)
