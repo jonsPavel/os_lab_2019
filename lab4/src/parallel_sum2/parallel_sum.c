@@ -7,10 +7,16 @@
 #include <getopt.h>
 #include <sys/time.h>
 #include "sum.h"
-#include "sum.c"
 #include "utils.h"
-#include "utils.c"
 
+#define DEBUG true
+#define LOG_DEBUG(msg, ...) do { \
+  if (DEBUG) { \
+    printf("[DEBUG]: "); \
+    printf(msg, ##__VA_ARGS__ );\
+    printf("\n"); \
+    } \
+  } while (0)
 
 void *ThreadSum(void *args) {
   struct SumArgs *sum_args = (struct SumArgs *)args;
@@ -71,6 +77,7 @@ int main(int argc, char **argv) {
   if (threads_num <= 0 || seed <= 0 || array_size <= 0 )
     exit_invalid_syntaxis(argv[0]);
 
+  LOG_DEBUG("threads_num = %d; seed = %d; array_size = %d", threads_num, seed, array_size);
   /*
    * TODO:
    * your code here
@@ -78,24 +85,24 @@ int main(int argc, char **argv) {
    */
   int *array = malloc(sizeof(int) * array_size);
   GenerateArray(array, array_size, seed);
+  LOG_DEBUG("Array generated");
 
   struct SumArgs *args;
   args = (struct SumArgs*) malloc(sizeof(struct SumArgs) * threads_num);
   int array_process_step = threads_num < array_size ? (array_size / threads_num) : 1;
 
-    struct timeval start_time;
-    gettimeofday(&start_time, NULL);
+  struct timeval start_time;
+  gettimeofday(&start_time, NULL);
   int arr_size = array_size;
   int t_num = threads_num;
 
   for (int  i = 0; i < t_num; i++) {
     args[i].array = array;
-        int begin = array_process_step * i;
+    int begin = array_process_step * i;
     args[i].begin = begin > arr_size ? arr_size : begin;
-        int end = begin + array_process_step;
+    int end = begin + array_process_step;
     args[i].end = end > arr_size ? arr_size : end;
   }
-
   for (int  i = 0; i < t_num; i++) {
     struct SumArgs *arg;
     arg = (struct SumArgs*) malloc(sizeof(struct SumArgs));
