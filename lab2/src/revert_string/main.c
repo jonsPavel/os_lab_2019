@@ -3,7 +3,6 @@
 #include <string.h>
 
 #include "revert_string.h"
-#include "revert_string.c"
 
 int main(int argc, char *argv[])
 {
@@ -21,7 +20,5 @@ int main(int argc, char *argv[])
 	printf("Reverted: %s\n", reverted_str);
 	free(reverted_str);
 	return 0;
-    printf("Change");
-
 }
 
