@@ -14,32 +14,29 @@ int factor = 1;
 int modd = 0;
 pthread_mutex_t mutx = PTHREAD_MUTEX_INITIALIZER;
 
-void CountPart(void *args) {
+void CountPart(void *args) {  //вычисление факториала по модулю части
+    pthread_mutex_lock(&mutx); // взятие мьютекса
     struct FactArgs *arrs = (struct FactArgs *)args;
     int num = 1;
-    for(int i = arrs->begin; i < arrs->end; i++)
+    for(int i = arrs->begin; i < arrs->end; i++) //вычисление 
     {
         num = num%modd * i%modd;
     }
-    pthread_mutex_lock(&mutx);
     factor = factor % modd * num % modd;
-    pthread_mutex_unlock(&mutx);
+    pthread_mutex_unlock(&mutx); // отдача мьютекса
 }
 
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv){
     int k = 0;
     int pnum = 0;
 
-    int opt = getopt(argc,argv, "k:");
-    if (opt != 'k')
-    {
+    int opt = getopt(argc,argv, "k:"); // работа с командной строк
+    if (opt != 'k'){ // в сл ошибки
         printf("Usage: %s -k \"num\" --mod \"num\" --pnum \"num\" \n", argv[0]);
         return 1;
     }
-    else
-    {
+    else{ //проверка
         k = atoi(optarg);
         if (k <= 0)
         {
@@ -60,9 +57,8 @@ int main(int argc, char **argv)
 
         if (c == -1) break;
 
-        switch (c) 
-        {
-        case 0:
+        switch (c) {
+        case 0: // варианты 
             switch (option_index) 
             {
             case 0:
@@ -101,45 +97,39 @@ int main(int argc, char **argv)
     }
   }
 
-  if (optind < argc) 
-  {
+  if (optind < argc)  { 
     printf("Has at least one no option argument\n");
     return 1;
   }
 
-  if (modd == 0 || pnum == 0) 
-  {
+  if (modd == 0 || pnum == 0) {
     printf("Usage: %s -k \"num\" --mod \"num\" --pnum \"num\" \n", argv[0]);
     return 1;
   }
 
-  int ars = k/pnum;
-  int left = k%pnum;
+  int ars = k/pnum; //шаг
+  int left = k%pnum; // хвост
   struct FactArgs args[pnum];
-  for(int i = 0; i < pnum; i++)
-  {
+  for(int i = 0; i < pnum; i++){ // разграничение диапазонов потоков
       args[i].begin = ars*i + (left < i ? left : i) + 1;
       args[i].end = ars*(i+1) + (left < i+1 ? left : i+1) + 1;
   }
 
   pthread_t threads[pnum];
-  for(int i = 0; i < pnum; i++)
-  {
-      if(pthread_create(&threads[i], NULL, (void*)CountPart, (void *)&(args[i])) != 0)
-      {
+  for(int i = 0; i < pnum; i++){
+      if(pthread_create(&threads[i], NULL, (void*)CountPart, (void *)&(args[i])) != 0)//no problem
+      {//создание потоковой функции
           printf("pthread error\n");
           return 1;
       }
   }
 
-  for(int i = 0; i < pnum; i++)
-  {
-      pthread_join(threads[i], NULL);
+  for(int i = 0; i < pnum; i++){
+      pthread_join(threads[i], NULL); // ожидание завершения
   }
 
   factor %= modd;
   printf("Factorial %d by mod %d = %d\n", k, modd, factor);
-
 
     return 0;
 }
