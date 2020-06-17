@@ -150,25 +150,28 @@ int main(int argc, char **argv) {
         fprintf(stderr, "Client read failed\n");
         break;
       }
+      //проверяем формат полученных данных с созданным буфером
       if (read < buffer_size) {
         fprintf(stderr, "Client send wrong data format\n");
         break;
       }
-
+      //создаем потоки
       pthread_t threads[tnum];
       
-      //Разбиваем информацию от клиента
+      //создаём переменные и Разбиваем информацию от клиента для подсчёта
       uint64_t begin = 0;
       uint64_t end = 0;
       uint64_t mod = 0;
+      //из 2 в 1, кол=во =3
       memcpy(&begin, from_client, sizeof(uint64_t));
       memcpy(&end, from_client + sizeof(uint64_t), sizeof(uint64_t));
       memcpy(&mod, from_client + 2 * sizeof(uint64_t), sizeof(uint64_t));
 
       fprintf(stdout, "%d receive: %lu %lu %lu\n", port, begin, end, mod);
-
+      
       struct FactorialArgs args[tnum];
       uint32_t i;
+      //само рампараллеривание  на потоки
       for ( i = 0; i < tnum; i++) {
         // TODO: parallel somehow
         args[i].mod = mod;
